@@ -77,6 +77,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.Executor;
 
@@ -194,85 +195,69 @@ public class MainActivity extends AppCompatActivity {
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Keliamas...");
 
-
-        StorageReference ref = storageReference.child("files").child(userId).child(fileModel.getTimestamp());
-
-
+        String encodedString = Base64.getEncoder().encodeToString(fileModel.getName().getBytes());
+        StorageReference ref = storageReference.child("files").child(userId).child(encodedString);
 
 
-        ref.putFile(fileModel.getUri())
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-
-                        Toast.makeText(MainActivity.this, "Failed " + e.getMessage() ,Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
-                                .getTotalByteCount());
-                        progressDialog.setMessage("Uploaded " + (int) progress + "%");
-                    }
-                });
 
 
-        data.add(fileModel);
+
+
+
 
 
         mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        uploadedFilesRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(fileModel.getTimestamp());
+
+
+        uploadedFilesRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(encodedString);
         if(addToDatabase){
+            progressDialog.show();
+           // saveFileToExternal(fileModel);
+            ref.putFile(fileModel.getUri())
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            FileModel tmp = new FileModel();
+                            tmp.setPath(fileModel.getPath());
+                            tmp.setTimestamp(fileModel.getTimestamp());
+                            tmp.setName(fileModel.getName());
+                            tmp.setSize(fileModel.getSize());
 
-            saveFileToExternal(fileModel);
-
-            FileModel tmp = new FileModel();
-            tmp.setPath(fileModel.getPath());
-            tmp.setTimestamp(fileModel.getTimestamp());
-            tmp.setName(fileModel.getName());
-            tmp.setSize(fileModel.getSize());
-
-            uploadedFilesRef.setValue(tmp).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(MainActivity.this, "Failas uzsifruotas sekmingai.", Toast.LENGTH_SHORT).show();
-                    mRecyclerView.setAdapter(new RecyclerAdapter(data, new RecyclerAdapter.OnItemClickListener() {
-                        @Override public void onItemClick(FileModel item) {
-
-                            dialogFileName.setText(item.getName());
-                            handlerDialog.show();
-
-                            deleteBtn.setOnClickListener(new View.OnClickListener() {
+                            uploadedFilesRef.setValue(tmp).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
-                                public void onClick(View view) {
-                                    performDeleting(item);
+                                public void onSuccess(Void aVoid) {
+                                    recreate();
+
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(MainActivity.this, "Ivyko klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
-                            decryptbtn.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    performDecryption(item);
-                                }
-                            });
+
                         }
-                    }));
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
 
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(MainActivity.this, "Ivyko klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                            Toast.makeText(MainActivity.this, "Failed " + e.getMessage() ,Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
+                                    .getTotalByteCount());
+                            progressDialog.setMessage("Ikelta " + (int) progress + "%");
+                        }
+                    });
+
+
         }
         else{
+            data.add(fileModel);
             mRecyclerView.setAdapter(new RecyclerAdapter(data, new RecyclerAdapter.OnItemClickListener() {
                 @Override public void onItemClick(FileModel item) {
 
@@ -381,30 +366,28 @@ public class MainActivity extends AppCompatActivity {
         public void loadSavedFiles() {
         uploadedFilesRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId);
         uploadedFilesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if(snapshot.exists()){
+
                     for(DataSnapshot ds : snapshot.getChildren()){
 
                         FileModel fm = ds.getValue(FileModel.class);
 
-                        try {
-                            updateRecyclerView(fm, false);
-                        } catch (InvalidKeyException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchPaddingException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+
+
+                            try {
+                                updateRecyclerView(fm, false);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
                     }
                 }
-                uploadedFilesRef.removeEventListener(this);
+           uploadedFilesRef.removeEventListener(this);
             }
 
             @Override
