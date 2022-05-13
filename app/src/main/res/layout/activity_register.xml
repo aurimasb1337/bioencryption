@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+    android:background="@color/purple_800"
+    android:animateLayoutChanges="true"
+    tools:context=".RegisterActivity">
+
+
+
+
+<TextView
+    android:id="@+id/hint"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textAlignment="center"
+    android:text="Prisijunkite"
+    android:textColor="@color/white"
+    android:textFontWeight="700"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    android:textSize="20dp"
+    />
+
+    <com.google.android.material.button.MaterialButton
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/hint"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="10dp"
+        android:id="@+id/googleLogin"
+        android:layout_width="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="50dp"
+        android:layout_height="wrap_content"
+        android:background="#5E9AFD"
+        app:backgroundTint="#5E9AFD"
+        app:icon="@drawable/googleg_standard_color_18"
+        app:iconTint="@android:color/transparent"
+        app:iconTintMode="add"
+        app:iconGravity="textStart"
+
+        android:text="Google login"></com.google.android.material.button.MaterialButton>
+</androidx.constraintlayout.widget.ConstraintLayout>

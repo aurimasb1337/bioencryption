@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "17481474843",
+    "firebase_url": "https://bioencryption-83b6a-default-rtdb.firebaseio.com",
+    "project_id": "bioencryption-83b6a",
+    "storage_bucket": "bioencryption-83b6a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17481474843:android:32f88513395188861fa9be",
+        "android_client_info": {
+          "package_name": "com.example.bioencryption"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "17481474843-48vefjjv3n1o2niajqgqdod81mso8g7n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bioencryption",
+            "certificate_hash": "b0727dd5089df7c7cc6b64143068e0980e072ea3"
+          }
+        },
+        {
+          "client_id": "17481474843-fa7b12uqvleffbv4p5luvpeubqa86ns6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAz3J5EiMxPwRewBfjBr2cnRsdF29VoJcA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "17481474843-fa7b12uqvleffbv4p5luvpeubqa86ns6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
