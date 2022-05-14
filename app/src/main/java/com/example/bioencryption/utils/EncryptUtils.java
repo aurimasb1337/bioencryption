@@ -59,8 +59,8 @@ public class EncryptUtils {
 
         FileOutputStream fos = new FileOutputStream(kelias + "/" +fileNameArr[0]+"-encrypted");
 
-
-        SecretKeySpec sks = new SecretKeySpec(fileModel.getBase64id().substring(0,16).getBytes(),
+        String fileKey = fileModel.getBase64id().length()<15 ? "MyDifficultPassw" : fileModel.getBase64id().substring(0,16);
+        SecretKeySpec sks = new SecretKeySpec(fileKey.getBytes(),
                 "AES");
         // Create cipher
         Cipher cipher = Cipher.getInstance("AES");
@@ -87,8 +87,8 @@ public class EncryptUtils {
         FileInputStream fis = new FileInputStream(file);
 
         FileOutputStream fos = new FileOutputStream(kelias + "/" + fileNameArr[0]+"-decrypted"+"."+fileNameArr[1]);
-
-        SecretKeySpec sks = new SecretKeySpec(fileModel.getBase64id().substring(0,16).getBytes(),
+        String fileKey = fileModel.getBase64id().length()<15 ? "MyDifficultPassw" : fileModel.getBase64id().substring(0,16);
+        SecretKeySpec sks = new SecretKeySpec(fileKey.getBytes(),
                 "AES");
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.DECRYPT_MODE, sks);

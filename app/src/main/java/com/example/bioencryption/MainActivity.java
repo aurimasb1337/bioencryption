@@ -207,13 +207,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         loadSavedFiles();
-      createEmptyFile();
+        try {
+            createEmptyFiles();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    private void createEmptyFile(){
+    private void createEmptyFiles() throws IOException {
 
         File file = new File(kelias, "testas.txt");
+        File f1 = new File(kelias, "foto.png");
+        File f3 = new File(kelias, "doc.pdf");
+        File f2 = new File(kelias, "foto.jpeg");
+
+        f1.createNewFile();
+        f3.createNewFile();
+        f2.createNewFile();
         FileWriter fw;
 
 
@@ -273,7 +284,8 @@ public class MainActivity extends AppCompatActivity {
         uploadedFilesRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(encodedString);
         if(addToDatabase){
             progressDialog.show();
-           // saveFileToExternal(fileModel);
+
+
             ref.putFile(fileModel.getUri())
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -284,33 +296,33 @@ public class MainActivity extends AppCompatActivity {
                             tmp.setName(fileModel.getName());
                             tmp.setSize(fileModel.getSize());
                             tmp.setBase64id(encodedString);
-
+                            try {
+                                EncryptUtils.encrypt(getApplicationContext(), tmp);
+                                recreate();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (NoSuchAlgorithmException e) {
+                                e.printStackTrace();
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (NoSuchPaddingException e) {
+                                e.printStackTrace();
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (InvalidKeyException e) {
+                                e.printStackTrace();
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (InvalidKeySpecException e) {
+                                e.printStackTrace();
+                            }
                             uploadedFilesRef.setValue(tmp).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
 
-                                    try {
-                                        EncryptUtils.encrypt(getApplicationContext(), tmp);
-                                        recreate();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                        progressDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    } catch (NoSuchAlgorithmException e) {
-                                        e.printStackTrace();
-                                        progressDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    } catch (NoSuchPaddingException e) {
-                                        e.printStackTrace();
-                                        progressDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    } catch (InvalidKeyException e) {
-                                        e.printStackTrace();
-                                        progressDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    } catch (InvalidKeySpecException e) {
-                                        e.printStackTrace();
-                                    }
+
 
 
                                 }
