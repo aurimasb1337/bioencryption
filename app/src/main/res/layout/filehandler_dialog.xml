@@ -9,17 +9,18 @@
     android:background="@drawable/round"
     android:orientation="vertical">
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieAnim1"
         android:layout_width="250dp"
         android:layout_height="200dp"
         android:layout_gravity="center"
-        android:src="@drawable/fileimg"
-        android:layout_marginTop="50dp"
-   >
+
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/bio">
 
 
-    </ImageView>
+    </com.airbnb.lottie.LottieAnimationView>
 
 
     <TextView

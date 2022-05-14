@@ -5,8 +5,8 @@
         android:angle="90"
         android:endColor="#00ffffff"
 
-        android:centerColor="#6DF1E0E0"
-        android:startColor="#448173"
+        android:centerColor="#6D96599A"
+        android:startColor="#6F7371"
         />
 
 

@@ -221,10 +221,12 @@ public class MainActivity extends AppCompatActivity {
         File f1 = new File(kelias, "foto.png");
         File f3 = new File(kelias, "doc.pdf");
         File f2 = new File(kelias, "foto.jpeg");
+        File f5 = new File(kelias, "video.mp4");
 
         f1.createNewFile();
         f3.createNewFile();
         f2.createNewFile();
+        f5.createNewFile();
         FileWriter fw;
 
 
@@ -296,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
                             tmp.setName(fileModel.getName());
                             tmp.setSize(fileModel.getSize());
                             tmp.setBase64id(encodedString);
+                            tmp.setType(fileModel.getType());
                             try {
                                 EncryptUtils.encrypt(getApplicationContext(), tmp);
                                 recreate();
