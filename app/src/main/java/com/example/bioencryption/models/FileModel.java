@@ -7,6 +7,15 @@ import java.io.File;
 public class FileModel {
     private long size;
 
+    public String getBase64id() {
+        return base64id;
+    }
+
+    public void setBase64id(String base64id) {
+        this.base64id = base64id;
+    }
+
+    private String base64id;
     public Uri getUri() {
         return uri;
     }

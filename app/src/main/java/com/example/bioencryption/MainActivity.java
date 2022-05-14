@@ -41,6 +41,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,6 +76,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -97,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView dialogFileName;
     private String userId;
     private String actionType = "";
+    private  String kelias;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,9 +167,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+         kelias=getExternalFilesDir(null) + "/encrypted";
+        File folder = new File(kelias);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdir();
+        }
+        if(success){
+           // Toast.makeText(this,"Sukurta "+folder.getAbsolutePath(),Toast.LENGTH_LONG).show();
+        } else{
+          //  Toast.makeText(this,"Nesukurta" +folder.getAbsolutePath(),Toast.LENGTH_LONG).show();
+        }
 
         loadSavedFiles();
+      createEmptyFile();
+
+    }
+
+    private void createEmptyFile(){
+
+        File file = new File(kelias, "testas.txt");
+        FileWriter fw;
+
+
+        try {
+            fw = new FileWriter(file);
+            fw.write("test");
+            fw.close();
+            Toast.makeText(this,"Failas issaugotas",Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this,"Nepavyko issaugoti",Toast.LENGTH_SHORT).show();
+
+        }
     }
 
     private void showDummyData() {
@@ -188,11 +220,12 @@ public class MainActivity extends AppCompatActivity {
     }
     private DatabaseReference uploadedFilesRef;
     private StorageReference storageReference ;
+    private  ProgressDialog progressDialog;
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void updateRecyclerView (FileModel fileModel, boolean addToDatabase) throws Exception {
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Keliamas...");
 
         String encodedString = Base64.getEncoder().encodeToString(fileModel.getName().getBytes());
@@ -222,11 +255,35 @@ public class MainActivity extends AppCompatActivity {
                             tmp.setTimestamp(fileModel.getTimestamp());
                             tmp.setName(fileModel.getName());
                             tmp.setSize(fileModel.getSize());
+                            tmp.setBase64id(encodedString);
 
                             uploadedFilesRef.setValue(tmp).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    recreate();
+
+                                    try {
+                                        EncryptUtils.encrypt(getApplicationContext(), tmp);
+                                        recreate();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        progressDialog.dismiss();
+                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    } catch (NoSuchAlgorithmException e) {
+                                        e.printStackTrace();
+                                        progressDialog.dismiss();
+                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    } catch (NoSuchPaddingException e) {
+                                        e.printStackTrace();
+                                        progressDialog.dismiss();
+                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    } catch (InvalidKeyException e) {
+                                        e.printStackTrace();
+                                        progressDialog.dismiss();
+                                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    } catch (InvalidKeySpecException e) {
+                                        e.printStackTrace();
+                                    }
+
 
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -266,13 +323,35 @@ public class MainActivity extends AppCompatActivity {
                     deleteBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            performDeleting(item);
+
                         }
                     });
                     decryptbtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            performDecryption(item);
+                            try {
+                                EncryptUtils.decrypt(getApplicationContext(), item);
+                                DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(item.getBase64id());
+                                    fileRef.removeValue();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (NoSuchAlgorithmException e) {
+                                e.printStackTrace();
+
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (NoSuchPaddingException e) {
+                                e.printStackTrace();
+
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (InvalidKeyException e) {
+                                e.printStackTrace();
+
+                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            } catch (InvalidKeySpecException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
 
@@ -282,10 +361,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void performDecryption(FileModel item) {
-    }
 
-    private void performDeleting(FileModel item) {
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressDialog.dismiss();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -331,42 +412,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void saveFileToExternal(FileModel fileModel) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        File file = new File(fileModel.getUri().getPath());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-            File extStore = Environment.getExternalStorageDirectory();
-            FileInputStream fis = new FileInputStream(file.getPath());
-            // This stream write the encrypted text. This stream will be wrapped by
-            // another stream.
-            FileOutputStream fos = new FileOutputStream(extStore + "/encrypted");
-
-            // Length is 16 byte
-            SecretKeySpec sks = new SecretKeySpec("MyDifficultPassw".getBytes(),
-                    "AES");
-            // Create cipher
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, sks);
-            // Wrap the output stream
-            CipherOutputStream cos = new CipherOutputStream(fos, cipher);
-            // Write bytes
-            int b;
-            byte[] d = new byte[8];
-            while ((b = fis.read(d)) != -1) {
-                cos.write(d, 0, b);
-            }
-            // Flush and close streams.
-            cos.flush();
-            cos.close();
-            fis.close();
-        }
-    }
 
 
         public void loadSavedFiles() {
         uploadedFilesRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId);
         uploadedFilesRef.addListenerForSingleValueEvent(new ValueEventListener() {
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
@@ -432,9 +485,11 @@ public class MainActivity extends AppCompatActivity {
     private void showFileChooser(){
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
+
+        Uri targetUri = Uri.parse(getExternalFilesDir(null) + "/encrypted");
 //        intent.setType("text/xml");   //XML file only
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setDataAndType(targetUri, "*/*");
 
         try {
             startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), REQUEST_CODE_FILE);
