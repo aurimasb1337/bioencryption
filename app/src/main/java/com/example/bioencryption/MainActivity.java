@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
             fw = new FileWriter(file);
             fw.write("test");
             fw.close();
-            Toast.makeText(this,"Failas issaugotas",Toast.LENGTH_SHORT).show();
+
         } catch (IOException e) {
             Toast.makeText(this,"Nepavyko issaugoti",Toast.LENGTH_SHORT).show();
 
@@ -320,10 +320,13 @@ public class MainActivity extends AppCompatActivity {
 
                     dialogFileName.setText(item.getName());
                     handlerDialog.show();
+                    DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(item.getBase64id());
                     deleteBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-
+                    fileRef.removeValue();
+                    handlerDialog.hide();
+                    recreate();
                         }
                     });
                     decryptbtn.setOnClickListener(new View.OnClickListener() {
@@ -331,8 +334,11 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             try {
                                 EncryptUtils.decrypt(getApplicationContext(), item);
-                                DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(item.getBase64id());
+
                                     fileRef.removeValue();
+                                handlerDialog.hide();
+                                recreate();
+                                Toast.makeText(MainActivity.this, "Sekmingai issifruotas failas.", Toast.LENGTH_SHORT).show();
                             } catch (IOException e) {
                                 e.printStackTrace();
 
@@ -367,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         progressDialog.dismiss();
+        handlerDialog.dismiss();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

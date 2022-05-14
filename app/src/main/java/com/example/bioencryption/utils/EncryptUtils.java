@@ -1,7 +1,10 @@
 package com.example.bioencryption.utils;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -74,6 +77,7 @@ public class EncryptUtils {
         cos.flush();
         cos.close();
         fis.close();
+        file.delete();
     }
     public  static void decrypt(Context context, FileModel fileModel) throws IOException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
@@ -97,5 +101,9 @@ public class EncryptUtils {
         fos.flush();
         fos.close();
         cis.close();
+        file.delete();
+
+
+
     }
 }
