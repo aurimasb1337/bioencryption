@@ -41,7 +41,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +49,7 @@ import android.widget.Toast;
 import com.example.bioencryption.adapters.RecyclerAdapter;
 import com.example.bioencryption.models.FileModel;
 import com.example.bioencryption.utils.EncryptUtils;
-import com.example.bioencryption.utils.PathUtil;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
@@ -65,15 +65,12 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.BufferedInputStream;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -83,15 +80,13 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.Executor;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
+
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
+
 
 public class MainActivity extends AppCompatActivity {
     private FloatingActionButton addbtn;
     private int REQUEST_CODE_FILE = 205;
-    private  RecyclerAdapter adapter;
     private RecyclerView mRecyclerView;
     private MaterialButton decryptbtn, deleteBtn;
     private ArrayList<FileModel> data = new ArrayList<>();
