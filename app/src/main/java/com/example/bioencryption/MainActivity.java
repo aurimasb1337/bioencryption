@@ -100,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
     private String userId;
     private String actionType = "";
     private  String kelias;
+    private BiometricPrompt biometricPrompt;
+    private  BiometricPrompt.PromptInfo promptInfo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         Executor executor = ContextCompat.getMainExecutor(this);
 
-        final BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
+         biometricPrompt = new BiometricPrompt(MainActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
             @Override
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
@@ -144,8 +146,38 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                //showFileChooser();
-                Toast.makeText(getApplicationContext(), "Login Success", Toast.LENGTH_SHORT).show();
+                if(actionType.equals("ADD_FILE")){
+                    showFileChooser();
+                }
+                else if(actionType.equals("DECRYPT_FILE")){
+                    try {
+                        EncryptUtils.decrypt(getApplicationContext(), globalFile);
+                        DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(globalFile.getBase64id());
+                        fileRef.removeValue();
+                        handlerDialog.hide();
+                        recreate();
+                        Toast.makeText(MainActivity.this, "Sekmingai issifruotas failas.", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+
+                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (NoSuchPaddingException e) {
+                        e.printStackTrace();
+
+                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
+
+                        Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (InvalidKeySpecException e) {
+                        e.printStackTrace();
+                    }
+                }
+
 
             }
             @Override
@@ -154,15 +186,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder().setTitle("Autentikuokite")
+        promptInfo = new BiometricPrompt.PromptInfo.Builder().setTitle("Autentikuokite")
                 .setDescription("Palieskite pirsto jutikli").setNegativeButtonText("Atsaukti").build();
         addbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //  biometricPrompt.authenticate(promptInfo);
+               biometricPrompt.authenticate(promptInfo);
+                actionType="ADD_FILE";
 
 
-                showFileChooser();
 
             }
         });
@@ -221,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference uploadedFilesRef;
     private StorageReference storageReference ;
     private  ProgressDialog progressDialog;
+    private FileModel globalFile;
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void updateRecyclerView (FileModel fileModel, boolean addToDatabase) throws Exception {
         storageReference = FirebaseStorage.getInstance().getReference();
@@ -332,32 +365,9 @@ public class MainActivity extends AppCompatActivity {
                     decryptbtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            try {
-                                EncryptUtils.decrypt(getApplicationContext(), item);
-
-                                    fileRef.removeValue();
-                                handlerDialog.hide();
-                                recreate();
-                                Toast.makeText(MainActivity.this, "Sekmingai issifruotas failas.", Toast.LENGTH_SHORT).show();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-
-                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            } catch (NoSuchAlgorithmException e) {
-                                e.printStackTrace();
-
-                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            } catch (NoSuchPaddingException e) {
-                                e.printStackTrace();
-
-                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            } catch (InvalidKeyException e) {
-                                e.printStackTrace();
-
-                                Toast.makeText(MainActivity.this, "Klaida" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            } catch (InvalidKeySpecException e) {
-                                e.printStackTrace();
-                            }
+                            actionType="DECRYPT_FILE";
+                            biometricPrompt.authenticate(promptInfo);
+                        globalFile = item;
                         }
                     });
 
