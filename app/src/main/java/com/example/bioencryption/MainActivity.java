@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
+                Toast.makeText(MainActivity.this, "Autentikavimo klaida" + errString, Toast.LENGTH_SHORT).show();
             }
 
 
@@ -179,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationFailed() {
                 super.onAuthenticationFailed();
+                Toast.makeText(MainActivity.this, "Autentikavimo klaida", Toast.LENGTH_SHORT).show();
             }
         });
 
