@@ -60,6 +60,7 @@ public class EncryptUtils {
         FileOutputStream fos = new FileOutputStream(kelias + "/" +fileNameArr[0]+"-encrypted");
 
         String fileKey = fileModel.getBase64id().length()<15 ? "MyDifficultPassw" : fileModel.getBase64id().substring(0,16);
+
         SecretKeySpec sks = new SecretKeySpec(fileKey.getBytes(),
                 "AES");
         // Create cipher
@@ -79,6 +80,8 @@ public class EncryptUtils {
         fis.close();
         file.delete();
     }
+
+    // FILE API SDK 29
     public  static void decrypt(Context context, FileModel fileModel) throws IOException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException {
         String [] fileNameArr = fileModel.getName().split("\\.");

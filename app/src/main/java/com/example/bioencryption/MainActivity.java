@@ -68,6 +68,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -368,6 +369,11 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View view) {
                     fileRef.removeValue();
+                            String [] fileNameArr = item.getName().split("\\.");
+                            File file = new File(kelias + "/" +fileNameArr[0]+"-encrypted");
+                            if(file.exists()){
+                                file.delete();
+                            }
                     handlerDialog.hide();
                     recreate();
                         }
@@ -394,6 +400,17 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         progressDialog.dismiss();
         handlerDialog.dismiss();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        for(FileModel fm : data){
+            DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(fm.getBase64id());
+            if(!checkIfFileIsInStorage(fm)){
+                recreate();
+            }
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -456,10 +473,17 @@ public class MainActivity extends AppCompatActivity {
 
                         FileModel fm = ds.getValue(FileModel.class);
 
+                        assert fm != null;
 
 
                             try {
-                                updateRecyclerView(fm, false);
+                                if(  checkIfFileIsInStorage(fm)) {
+                                    updateRecyclerView(fm, false);
+                                }
+                                else{
+                                    DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference().child("savedFiles").child(userId).child(fm.getBase64id());
+                                    fileRef.removeValue();
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -475,6 +499,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private boolean checkIfFileIsInStorage(FileModel fileModel) {
+        String [] fileNameArr = fileModel.getName().split("\\.");
+        File file = new File(kelias + "/" +fileNameArr[0]+"-encrypted");
+        return file.exists();
     }
 
     public long getFileSize(Uri uri) {
